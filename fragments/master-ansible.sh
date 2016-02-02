@@ -250,6 +250,3 @@ fi
 ansible masters -m shell -a 'oadm manage-node $HOSTNAME --schedulable=false || true' -u cloud-user --sudo -i /var/lib/ansible/inventory
 
 mv /var/lib/ansible/inventory.started /var/lib/ansible/inventory.deployed
-
-#cp /etc/origin/master/ca.crt $heat_outputs_path.ca_cert
-#cp /etc/origin/master/ca.key $heat_outputs_path.ca_key

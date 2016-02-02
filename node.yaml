@@ -334,6 +334,25 @@ resources:
               DOMAIN: {get_param: domain_name}
         all_master_nodes: {get_param: all_master_nodes}
 
+  post_ansible:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      outputs:
+        - name: ca_cert
+        - name: ca_key
+      config:
+        get_file: fragments/node-post-ansible.sh
+
+  deployment_post_ansible:
+    depends_on: deployment_run_ansible
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      config:
+        get_resource: post_ansible
+      server:
+        get_resource: host
+
   wait_condition:
     type: OS::Heat::WaitCondition
     properties:
@@ -378,6 +397,6 @@ outputs:
   wc_data:
     value: {get_attr: ['wait_condition', 'data']}
   ca_cert:
-    value: {get_attr: [deployment_run_ansible, ca_cert]}
+    value: {get_attr: [deployment_post_ansible, ca_cert]}
   ca_key:
-    value: {get_attr: [deployment_run_ansible, ca_key]}
+    value: {get_attr: [deployment_post_ansible, ca_key]}
