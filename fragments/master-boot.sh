@@ -63,6 +63,6 @@ DEVS=/dev/vdb
 VG=docker-vg
 EOF
 
-/usr/bin/docker-storage-setup
+/usr/bin/docker-storage-setup || notify_failure "docker-storage-setup failed"
 
 notify_success "OpenShift node has been prepared for running ansible."

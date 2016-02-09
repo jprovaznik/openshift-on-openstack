@@ -19,12 +19,6 @@ parameters:
     constraints:
     - custom_constraint: glance.image
 
-  lb_image:
-    type: string
-    description: Name or ID of the loadbalancer host image registered with Glance
-    constraints:
-    - custom_constraint: glance.image
-
   flavor:
     type: string
     description: The Nova flavor to use for the OpenShift nodes
@@ -95,12 +89,6 @@ parameters:
     description: >
       The hostname that is going to be set for the DNS server.
     default: "ns"
-
-  lb_hostname:
-    type: string
-    description: >
-      The hostname that is going to be set for the loadbalancer server.
-    default: ''
 
   infra_hostname:
     type: string
@@ -216,6 +204,18 @@ parameters:
       Do not install Openshift using Ansible
     default: false
 
+  lb_hostname:
+    type: string
+    description: >
+      The hostname that is going to be set for the loadbalancer server.
+    default: ''
+
+  lb_image:
+    type: string
+    description: Name or ID of the loadbalancer host image registered with Glance
+    constraints:
+    - custom_constraint: glance.image
+
 resources:
 
   fixed_network:
@@ -244,20 +244,10 @@ resources:
     depends_on: external_router_interface
     type: OS::LoadBalancer
     properties:
-      image: {get_param: lb_image}
-      flavor: {get_param: flavor}
-      key_name: {get_param: ssh_key_name}
-      ssh_user: {get_param: ssh_user}
-      rhn_username: {get_param: rhn_username}
-      rhn_password: {get_param: rhn_password}
-      rhn_pool: {get_param: rhn_pool}
-      hostname: {get_param: lb_hostname}
-      domain_name: {get_param: domain_name}
       external_network: {get_param: external_network}
       fixed_network: {get_resource: fixed_network}
       fixed_subnet: {get_resource: fixed_subnet}
-      ansible_public_key: {get_attr: [ansible_keys, public_key]}
-      dns_ip: {get_attr: [infra_floating_ip, floating_ip_address]}
+      lb_members: {get_attr: [openshift_masters, host]}
 
   infra_host:
     depends_on: external_router_interface
@@ -284,7 +274,7 @@ resources:
       port: {get_resource: infra_port}
       docker_volume_size: {get_param: master_docker_volume_size_gb}
       lb_hostname: {get_param: lb_hostname}
-      lb_ip: {get_attr: [lb_host, floating_ip]}
+      #lb_ip: {get_attr: [lb_host, floating_ip]}
       deploy_registry: {get_param: deploy_registry}
       deploy_router: {get_param: deploy_router}
       skip_ansible: {get_param: skip_ansible}
@@ -476,12 +466,12 @@ outputs:
   dns_ip:
     description: IP address of the DNS server OpenShift relies on
     value: {get_attr: [infra_floating_ip, floating_ip_address]}
-  lb_console_url:
-    description: URL of the OpenShift web console
-    value: {get_attr: [lb_host, console_url]}
-  lb_api_url:
-    description: URL entrypoint to the OpenShift API
-    value: {get_attr: [lb_host, api_url]}
+  #lb_console_url:
+  #  description: URL of the OpenShift web console
+  #  value: {get_attr: [lb_host, console_url]}
+  #lb_api_url:
+  #  description: URL entrypoint to the OpenShift API
+  #  value: {get_attr: [lb_host, api_url]}
   master_console_url:
     description: URL of the OpenShift web console
     value:
